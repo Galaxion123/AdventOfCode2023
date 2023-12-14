@@ -6,12 +6,14 @@ import scala.collection.mutable.ArrayBuffer
 
 object Reflector {
     def main(args: Array[String]): Unit = {
-        val inputFile = new File("./input/test_input")
+        val startTime = System.currentTimeMillis()
+        val inputFile = new File("./input/rocks_input")
         val platform = parse(inputFile)
         // println("Original: " + platform.map(_.mkString("")).mkString("\n") + "\n-------------\n\n")
         // part1(platform)
         part2(platform)
         // println("\n" + platform.transpose.map(_.mkString("")).mkString("\n"))
+        println(s"End time: ${(System.currentTimeMillis() - startTime)/1000} s.")
     }
 
     /** Part 1 roll to north */
@@ -23,12 +25,13 @@ object Reflector {
     /** Part 2 1000000000 cycles */
     private def part2(platform: Array[Array[Char]]): Unit = {
         val hashMap = new mutable.HashMap[String, Array[Array[Char]]]()
-        val statesMap = new mutable.HashMap[String, Array[Array[Char]]]()
+        val statesMap = new mutable.HashMap[(String, Int), (String, Int)]()
         var cyclePlatform = platform
 
-        (1 to 3).foreach(cycle => {
+        val output = (1 to 1000000000).foldLeft((hash(cyclePlatform), countLoad(cyclePlatform)))((tuple, cycle) => {
             // println(s"${hash(cyclePlatform)} - ${countLoad(cyclePlatform)}")
-            cyclePlatform = statesMap.getOrElseUpdate(hash(cyclePlatform), {
+            statesMap.getOrElseUpdate(tuple, {
+                cyclePlatform = hashMap.getOrElseUpdate(hash(cyclePlatform), cyclePlatform)
                 // println(s"cycle: $cycle -" + statesMap.size)
                 cyclePlatform = cyclePlatform.transpose
                 cyclePlatform = rockNRoll(cyclePlatform)
@@ -47,13 +50,18 @@ object Reflector {
                 // println("East: \n" + cyclePlatform.map(_.mkString("")).mkString("\n"))
                 // Tilt North
                 cyclePlatform = cyclePlatform.map(_.reverse)
-                cyclePlatform
+                cyclePlatform = hashMap.getOrElseUpdate(hash(cyclePlatform), cyclePlatform)
+                (hash(cyclePlatform), countLoad(cyclePlatform))
             })
-            // println(countLoad(cyclePlatform))
-            println(s"Original pos after $cycle: \n" + cyclePlatform.map(_.mkString("")).mkString("\n"))
+
+            //println(s"Original pos after $cycle: \n" + cyclePlatform.map(_.mkString("")).mkString("\n"))
+
+            // res
+            // println(output)
         })
 
-        println(countLoad(cyclePlatform))
+        // println(statesMap.mkString("Map: ", ", ", ""))
+        println(output._2)
     }
 
     private def md5(s: String): String = {
