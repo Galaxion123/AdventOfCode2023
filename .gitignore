@@ -1,3 +1,6 @@
 .idea
 **/input
 **/output
+/day_12/springs.sc
+/day_17/crucible.sc
+/day_18/digPart2.sc
